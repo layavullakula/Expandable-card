@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expandable Card using JS</title>
+    <style>
+        *{
+            margin: 1px;
+        }
+        .h1-inline { display: inline-block; vertical-align: middle; margin-right: 10px;text-align: center; }
+        hr { display: inline-block; width: 16%; border: none; border-top: 1px solid #ccc; }
+        #radio-container { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .radio-container { position: relative; margin: 10px 0; padding: 10px; border: 1px solid #ccc; cursor: pointer; transition: all 0.3s; }
+        .discount { background-color: #FF6B82; padding: 4px; color: white; font-size: 12px; margin-left: 10px; }
+        .radio-inner-container {margin-top: 5px; display: flex; justify-content: space-between; align-items: center; min-width: 50vw; }
+        .content { max-height: 0; overflow: hidden; transition: max-height 0.3s; padding: 0 10px; }
+        .expanded .content { max-height: 300px; }
+        select { margin-right: 10px; border: 0.9px solid #C8C8C8; border-radius: 3px;min-width: 60px;min-height: 20px;}
+        .content-table { width: 100%; border-collapse: collapse; margin-top: 10px; max-width: 25vw; margin-left: 20px;}
+        .content-table th, .content-table td { padding: 5px; text-align: center; }
+        .add-to-cart-btn { margin-top: 20px; padding: 10px 20px; background-color: #FF6B82; color: white; border: none; cursor: pointer; width: 51%;border-radius: 3px;}
+        .add-to-cart-btn:hover { background-color: #218838; }
+        .summary-container { display: flex; justify-content: space-between; width: 50vw; margin-top: 20px; }
+        .most-popular-ribbon {
+            position: absolute;
+            top: -10px;
+            right: 5px;
+            background-color: #FF6B82;
+            color: white;
+            padding: 5px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        /* Adjustments for different screen sizes */
+        @media (max-width: 768px) {
+            .radio-inner-container {
+                flex-direction: column;
+                min-width: auto;
+            }
+            .summary-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <hr /><h1 class="h1-inline">YAY! It's BOGO</h1><hr />
+    </div>
+    
+    <div id="radio-container"></div>
+    
+    <script>
+        const labels = ["1 Unit", "2 Unit", "3 Unit"];
+        const discounts = ["10% Off", "20% Off", "30% Off"];
+        const colors = ["Red", "Green", "Blue"];
+        const sizes = ["S", "M", "L"];
+        const Money = ["$10.00", "$18.00", "$24.00"];
+        let selectedTotal = 0; // For storing the selected radio price
+
+        // Function to create dropdown options
+        function createDropdown(options) {
+            const select = document.createElement('select');
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                select.appendChild(opt);
+            });
+            return select;
+        }
+
+        // Function to create content section
+        function createContent(index) {
+            const content = document.createElement('div');
+            content.className = 'content';
+            const table = document.createElement('table');
+            table.className = 'content-table';
+            const headerRow = document.createElement('tr');
+            ['', 'Size', 'Colour'].forEach(text => {
+                const th = document.createElement('th');
+                th.style.textAlign = "left"
+                th.style.fontWeight = 100;
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+            for (let i = 0; i < 2; i++) {
+                const row = document.createElement('tr');
+                const snoCell = document.createElement('td');
+                snoCell.textContent = "#"+(i + 1); // S.No value
+                const sizeCell = document.createElement('td');
+                const colorCell = document.createElement('td');
+                sizeCell.style.textAlign = "left"
+                colorCell.style.textAlign = "left"
+                sizeCell.appendChild(createDropdown(sizes));
+                colorCell.appendChild(createDropdown(colors));
+                row.appendChild(snoCell);
+                row.appendChild(sizeCell);
+                row.appendChild(colorCell);
+                table.appendChild(row);
+            }
+            content.appendChild(table);
+            return content;
+        }
+
+        // Create each radio container dynamically
+        function createRadioContainer(labelText, discountText, MoneyAmt, colorValue, index) {
+            const container = document.createElement('div');
+            container.className = 'radio-container';
+            container.onclick = function() { toggleExpand(container, MoneyAmt); };
+
+            const radioContainer = document.createElement('div');
+            radioContainer.className = 'radio-inner-container';
+
+            const containerInner = document.createElement('div');
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'color';
+            radio.id = `color-${index}`;
+            radio.value = colorValue;
+
+            const label = document.createElement('label');
+            label.htmlFor = radio.id;
+            label.textContent = labelText;
+            label.style.fontWeight = 600;
+
+            const span = document.createElement('span');
+            span.className = "discount";
+            span.textContent = discountText;
+
+            const divContainerForAmt = document.createElement('div');
+
+            const h1 = document.createElement('h3');
+            h1.textContent = MoneyAmt + " USD";
+
+            const span2 = document.createElement('h6');
+            span2.textContent = "$24.00 USD";
+            span2.style.textDecoration = "line-through";
+            span2.style.color = "#C8C8C8";
+
+            containerInner.appendChild(radio);
+            containerInner.appendChild(label);
+            containerInner.appendChild(span);
+
+            divContainerForAmt.appendChild(h1);
+            divContainerForAmt.appendChild(span2);
+
+            radioContainer.appendChild(containerInner);
+            radioContainer.appendChild(divContainerForAmt);
+            container.appendChild(radioContainer);
+            container.appendChild(createContent(index));
+
+            // Add "Most Popular" ribbon only to the 2nd radio container
+            if (index === 1) {
+                const ribbon = document.createElement('div');
+                ribbon.className = 'most-popular-ribbon';
+                ribbon.textContent = 'Most Popular';
+                container.appendChild(ribbon);
+            }
+
+            return container;
+        }
+
+        // Function to create the summary section (free delivery,total price and cart button)
+        function createSummarySection() {
+            const summaryContainer = document.createElement('div');
+            summaryContainer.className = 'summary-container';
+
+            const freeDelivery = document.createElement('p');
+            freeDelivery.textContent = 'Free Delivery';
+            freeDelivery.style.color = "#FF6B82"
+
+            const totalPrice = document.createElement('p');
+            totalPrice.id = 'total-price';
+            totalPrice.textContent = 'Total: $0.00';
+            totalPrice.style.fontWeight = 200;
+
+            const cardButton = document.createElement('button');
+            cardButton.className = "add-to-cart-btn";
+            cardButton.textContent = "+ Add to Cart"
+
+            summaryContainer.appendChild(freeDelivery);
+            summaryContainer.appendChild(totalPrice);
+            
+
+            // Append the summary section and button below the radio buttons
+            document.getElementById('radio-container').appendChild(summaryContainer);
+            document.getElementById('radio-container').appendChild(cardButton)
+        }
+
+        // Append radio containers to the main container
+        const radioContainer = document.getElementById('radio-container');
+        labels.forEach((label, index) => {
+            radioContainer.appendChild(createRadioContainer(label, discounts[index], Money[index], colors[index], index));
+        });
+
+        // Create the summary section dynamically
+        createSummarySection();
+
+        // Toggle expand/collapse functionality
+        function toggleExpand(container, MoneyAmt) {
+            const radioInput = container.querySelector('input[type="radio"]');
+            document.querySelectorAll('.radio-container').forEach(c => {
+                c.classList.remove('expanded');
+                c.querySelector('.content').style.maxHeight = null;
+                c.querySelector('input[type="radio"]').checked = false;
+            });
+            container.classList.add('expanded');
+            radioInput.checked = true;
+            container.querySelector('.content').style.maxHeight = container.querySelector('.content').scrollHeight + "px";
+
+            // Update the total price in the summary
+            updateTotalPrice(MoneyAmt);
+        }
+
+        // Function to update the total price
+        function updateTotalPrice(amount) {
+            selectedTotal = amount; // Store the selected total
+            document.getElementById('total-price').textContent = `Total: ${amount} USD`;
+        }
+    </script>
